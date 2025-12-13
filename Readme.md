@@ -1,0 +1,2 @@
+# Labwc/Openbox Menu Generator
+
