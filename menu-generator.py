@@ -421,14 +421,18 @@ if __name__ == "__main__":
 	for ag in range(appGroupLen):
 		catList = categoryDict[application_groups[ag]]
 		if len(catList) < 1:
-			continue 
-		
-		tmpList=[] 
-		for app in catList: 
-			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')]) 
-			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]]) 
-		catList=sorted(tmpList, key = lambda x: x[0].lower()) 
-		
+			continue
+
+		tmpList=[]
+		for app in catList:
+			if any(x[1][2] == app.Exec for x in tmpList): # check if app.Exec is already added, we don't want duplicates
+				continue
+				
+			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
+
+			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]])
+		catList=sorted(tmpList, key = lambda x: x[0].lower())
+
 		groupName = application_groups[ag]
 		groupIcon = getCatIcon(groupName)
 		
