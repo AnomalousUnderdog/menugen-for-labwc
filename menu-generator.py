@@ -9,7 +9,7 @@
 # - recoded for python 3.9+
 # - menu sort for both categories and programs
 # - finding all possible icons by searching deeply in themes
-# - icon search algorithm for faster approach 
+# - icon search algorithm for faster approach
 # - desktop item ignored if Exec command not found in system
 # - automatic and direct theme selection if possible
 # - flatpak applications support
@@ -65,10 +65,10 @@ ignoreList = ("gtk3-icon-browser","evince-previewer", "Ted",  "wingide3.2", "pyt
 prefixes = ("legacy","categories","apps","devices","mimetypes","places","preferences","actions", "status","emblems") #added for prefered icon dirs and sizes. could be gathered automatically but wouldn't be sorted like this
 iconSizes = ("48","32","24","16","48x48","40x40","36x36","32x32","24x24","64x64","72x72","96x96","16x16","128x128","256x256","scalable","apps","symbolic")
 terminal_string = "foot"
-  
+
 #constants and list for icon list generating
 image_file_prefix = (".png", ".svg", ".xpm")
-image_cat_prefix = ("applications-", "accessories-dictionary", "accessories-text-editor","preferences-desktop.","audio-speakers") 
+image_cat_prefix = ("applications-", "accessories-dictionary", "accessories-text-editor","preferences-desktop.","audio-speakers")
 iconThemes=os.listdir(image_dir_base[0]+"/icons")
 tmplst=[s for s in iconThemes if selected_theme in s]
 selected_theme = iconThemes[0] if tmplst == [] else tmplst[0]
@@ -151,7 +151,7 @@ class dtItem(object):
 		if len(di) < 3:
 			#"Error in %s: Invalid or no icon '%s'" % (self.fileName,  di)
 			return
-		dix = di.find("/")     # is it a full path? 
+		dix = di.find("/")     # is it a full path?
 		if dix >= 0 and dix <= 2:    # yes, its a path (./path or ../path or /path ...)
 			self.Icon = di
 			return
@@ -159,7 +159,7 @@ class dtItem(object):
 		tmp = glob.glob(image_dir + di + ".*")
 		if len(tmp) == 0: #if there is not correct icon in pixmap, check for icon theme
 			for theme in iconThemes:
-				tmp=[s for s in iconList if di in s] 
+				tmp=[s for s in iconList if di in s]
 				if len(tmp) > 0:
 					break # end loop if found
 				else:
@@ -239,7 +239,7 @@ def process_category(cat, curCats, aliases=group_aliases, appGroups=application_
 	return ""
 
 def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
-	active = False          # parse only after "[Desktop Entry]" line         
+	active = False          # parse only after "[Desktop Entry]" line
 	fh = open(dtf,  "r")
 	lines = fh.readlines()
 	this = dtItem(dtf)
@@ -303,7 +303,7 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 		for cat in this.Categories:
 			catDict[cat].append(this)
 
-addIconsToList(iconList, selected_theme) 
+addIconsToList(iconList, selected_theme)
 categoryDict = {}
 
 def print_desktop(handle, is_static):
@@ -401,13 +401,13 @@ def print_custom_footer(handle, is_static):
 	# Print Items
 	for item in footer_items:
 		iconPath = find_best_icon(item["icons"])
-		
+
 		if is_static:
 			handle.write(f'        <item label="{item["label"]}"')
 			if iconPath:
 				handle.write(f' icon="{iconPath}"')
 			handle.write('>\n')
-			
+
 			handle.write(f'            <action name="{item["action"]}">\n')
 			if item["cmd"]:
 				escaped_cmd = xescape(item["cmd"])
@@ -444,12 +444,12 @@ if __name__ == "__main__":
 	application_groups=sorted(application_groups, key=str.lower)
 	for appGroup in application_groups:
 		categoryDict[appGroup] = []
-	
+
 	dtFiles=[]
 	for appDir in applications_dirs:
 		appDir += "/*.desktop"
 		dtFiles+=glob.glob(appDir)
-	
+
 	for dtf in dtFiles:
 		skipFlag = False
 		for ifn in ignoreList:
@@ -465,7 +465,7 @@ if __name__ == "__main__":
 		except IOError as e:
 			print(f"Error opening output file: {e}", file=sys.stderr)
 			sys.exit(1)
-	
+
 	if args.output:
 		output_handle.write('<?xml version="1.0" encoding="UTF-8"?>\n')
 		output_handle.write('<openbox_menu >\n')
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 		print_desktop(output_handle, args.output)
 
 	appGroupLen = len(application_groups)
-	
+
 	for ag in range(appGroupLen):
 		catList = categoryDict[application_groups[ag]]
 		if len(catList) < 1:
@@ -501,7 +501,7 @@ if __name__ == "__main__":
 
 		groupName = application_groups[ag]
 		groupIcon = getCatIcon(groupName)
-		
+
 		if args.output:
 			menu_line = f'        <menu id="{groupName}" label="{groupName}"'
 			if groupIcon:
@@ -514,7 +514,7 @@ if __name__ == "__main__":
 				appIcon = app[1][0]
 				isTerm = app[1][1]
 				appExec = app[1][2]
-				
+
 				cmdString = appExec
 				if isTerm:
 					cmdString = f"{terminal_string} {appExec}"
@@ -539,13 +539,13 @@ if __name__ == "__main__":
 			print (catStr + ">")
 			for app in catList:
 				progStr = "<item "
-				progStr += "label=\"%s\" " % app[0] 
-				if app[1][0] != "": 
-					progStr += "icon=\"%s\" " % app[1][0] 
+				progStr += "label=\"%s\" " % app[0]
+				if app[1][0] != "":
+					progStr += "icon=\"%s\" " % app[1][0]
 				progStr += "><action name=\"Execute\"><command><![CDATA["
-				if app[1][1] == True:  
+				if app[1][1] == True:
 					progStr += terminal_string + " "
-				progStr += "%s]]></command></action></item>"  % app[1][2] 
+				progStr += "%s]]></command></action></item>"  % app[1][2]
 				print (progStr)
 			print ("</menu>")
 
@@ -558,11 +558,11 @@ if __name__ == "__main__":
 		output_handle.write('    </menu>\n')
 		output_handle.write('</openbox_menu>\n')
 	else:
-		print ("</openbox_pipe_menu>") 
-		
+		print ("</openbox_pipe_menu>")
+
 	if args.output and output_handle != sys.stdout:
 		output_handle.close()
-		
+
 		# --- AUTO RECONFIGURE LABWC ---
 		# Only run this if we generated a static file
 		print("Attempting to reconfigure labwc...", file=sys.stderr)
