@@ -296,6 +296,9 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 		else:
 			continue
 
+	if this.Exec.startswith("lxqt-sudo "):
+		this.Name = f"{this.Name} (Superuser)"
+
 	if catDict is None:
 		return this
 
