@@ -441,7 +441,6 @@ if __name__ == "__main__":
 
 	show_desktop = str(args.desktop).lower() in ("true", "1", "yes", "on", "t")
 
-	application_groups=sorted(application_groups, key=str.lower)
 	for appGroup in application_groups:
 		categoryDict[appGroup] = []
 
