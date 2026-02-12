@@ -279,7 +279,7 @@ def process_dtfile(dtf, separate_steam_games, catDict):  # process this file & e
 			execText = eqi[1]
 
 			# remove enclosing double/single quotes
-			if (execText.startswith('"') and execText.endswith('"')) or (execText.startswith("'") and execText.endswith("'")): 
+			if (execText.startswith('"') and execText.endswith('"')) or (execText.startswith("'") and execText.endswith("'")):
 				execText = execText[1:-1]
 
 			eqx=execText.split(" ", 1)[0]
@@ -545,7 +545,7 @@ if __name__ == "__main__":
 				continue
 
 			# Convert multiple spaces between each word in the app's name into one space.
-			# Also ensure the name is capitalized.
+			# Also ensure each word is capitalized.
 			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
 
 			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec, app.Name]])
