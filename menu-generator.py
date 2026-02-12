@@ -295,12 +295,66 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 			this.addCategories(cats)
 		else:
 			continue
-	if len(this.Categories) > 0:       
+
+	if catDict is None:
+		return this
+
+	if len(this.Categories) > 0:
 		for cat in this.Categories:
 			catDict[cat].append(this)
 
 addIconsToList(iconList, selected_theme) 
 categoryDict = {}
+
+def print_desktop(handle, is_static):
+	desktop_items = []
+
+	desktop_directory = userhome + "/Desktop"
+
+	if not os.path.exists(desktop_directory):
+		return
+
+	desktop_files = glob.glob(desktop_directory + "/*.desktop")
+
+	for desktop_file in desktop_files:
+		desktop_item = process_dtfile(desktop_file, None)
+		if desktop_item is None:
+			continue
+		desktop_items.append(desktop_item)
+
+	# Print Items
+	for item in desktop_items:
+		if item is None:
+			continue
+
+		if is_static:
+			handle.write(f'        <item label="{item.Name}"')
+			if item.Icon:
+				handle.write(f' icon="{item.Icon}"')
+			handle.write('>\n')
+
+			handle.write(f'            <action name="Execute">\n')
+			if item.Exec:
+				escaped_cmd = xescape(item.Exec)
+				handle.write(f'                <command>{escaped_cmd}</command>\n')
+			handle.write('            </action>\n')
+			handle.write('        </item>\n')
+		else:
+			# Pipe menu format
+			out = f'<item label="{item.Name}"'
+			if iconPath:
+				out += f' icon="{iconPath}"'
+			out += f'><action name="Execute">'
+			if item.Exec:
+				out += f'<command><![CDATA[{item.Exec}]]></command>'
+			out += '</action></item>'
+			print(out)
+
+	# Print Separator
+	if is_static:
+		handle.write('        <separator />\n')
+	else:
+		print("<separator />")
 
 def print_custom_footer(handle, is_static):
 	# Define custom items: [Label, ActionName, Command, PossibleIcons]
@@ -378,11 +432,14 @@ if __name__ == "__main__":
         formatter_class=argparse.RawTextHelpFormatter
 	)
 	parser.add_argument("-o", "--output", help="Path to output file for static menu generation.")
+	parser.add_argument("-d", "--desktop", default="true", help="Parse desktop files (true/false). Default: true")
 	parser.add_argument("-f", "--footer", default="true", help="Show custom footer (true/false). Default: true")
 	args = parser.parse_args()
 
 	# Logic to convert string argument to boolean
 	show_footer = str(args.footer).lower() in ("true", "1", "yes", "on", "t")
+
+	show_desktop = str(args.desktop).lower() in ("true", "1", "yes", "on", "t")
 
 	application_groups=sorted(application_groups, key=str.lower)
 	for appGroup in application_groups:
@@ -415,6 +472,9 @@ if __name__ == "__main__":
 		output_handle.write('    <menu id="root-menu" label="Applications">\n')
 	else:
 		print ("<openbox_pipe_menu>") # This is enough
+
+	if show_desktop:
+		print_desktop(output_handle, args.output)
 
 	appGroupLen = len(application_groups)
 	
