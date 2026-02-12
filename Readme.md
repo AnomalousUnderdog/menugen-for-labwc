@@ -34,13 +34,13 @@ python3 menu-generator.py -o ~/.config/labwc/menu.xml -f false
 
 | | |
 |-|-|
-|![](/preview/labwc.png)|![](/preview/labwc1.png)
+|![](./preview/labwc.png)|![](./preview/labwc1.png)|
 
 ### Openbox (Piped Menu)
 
 | | |
 |-|-|
-|![](/preview/menu.png)|![](/preview/menu2.png)
+|![](./preview/menu.png)|![](./preview/menu2.png)|
 
 `menu.xml` for the openbox menu shown above
 ```
