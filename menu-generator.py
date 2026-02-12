@@ -427,7 +427,11 @@ if __name__ == "__main__":
 		for app in catList:
 			if any(x[1][2] == app.Exec for x in tmpList): # check if app.Exec is already added, we don't want duplicates
 				continue
-				
+
+			# app has no name?
+			if not app.Name:
+				continue
+
 			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
 
 			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]])
