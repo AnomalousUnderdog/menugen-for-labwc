@@ -25,7 +25,7 @@ import subprocess, glob, os, sys, argparse
 
 userhome = os.path.expanduser('~')
 applications_dirs = ("/usr/share/applications", userhome + "/.local/share/applications","/var/lib/flatpak/exports/share/applications")
-image_dir_base = ("/usr/share", "/var/lib/flatpak/exports/share") # without "pixmaps" -/usr/local/share in FreeBSD, /usr/share on linux
+image_dir_base = ("/usr/share", "/var/lib/flatpak/exports/share", userhome + "/.local/share") # without "pixmaps" -/usr/local/share in FreeBSD, /usr/share on linux
 
 # --- Theme Selection Logic ---
 selected_theme = None
