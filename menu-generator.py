@@ -21,7 +21,7 @@
 #
 # ----- config ---
 
-import subprocess, glob, os, sys, argparse
+import subprocess, glob, os, sys, argparse, pathlib
 
 userhome = os.path.expanduser('~')
 applications_dirs = ("/usr/share/applications", userhome + "/.local/share/applications","/var/lib/flatpak/exports/share/applications")
@@ -59,7 +59,7 @@ if selected_theme is None:
 if selected_theme is None:
 	selected_theme = "Adwaita"
 
-application_groups = ("AudioVideo", "Development", "Editors",  "Engineering", "Games", "Graphics", "Internet",  "Multimedia", "Office",  "Other",  "Settings", "System",  "Utilities") # enter here new category as you wish, it will be sorted
+application_groups = ("AudioVideo", "Development", "Editors",  "Engineering", "Games", "Steam Games", "Graphics", "Internet",  "Multimedia", "Office",  "Other",  "Settings", "System",  "Utilities") # enter here new category as you wish, it will be sorted
 group_aliases = {"Audio":"Multimedia","Video":"Multimedia","AudioVideo":"Multimedia","Network":"Internet","Game":"Games", "Utility":"Utilities", "Development":"Editors","GTK":"",  "GNOME":""}
 ignoreList = ("gtk3-icon-browser","evince-previewer", "Ted",  "wingide3.2", "python3.4", "feh","xfce4-power-manager-settings", "picom","compton","yad-icon-browser" )
 prefixes = ("legacy","categories","apps","devices","mimetypes","places","preferences","actions", "status","emblems") #added for prefered icon dirs and sizes. could be gathered automatically but wouldn't be sorted like this
@@ -190,6 +190,19 @@ class dtItem(object):
 		self.Categories = data
 
 def getCatIcon(cat):
+	if cat == "Steam Games":
+
+		steam_icons = [s for s in iconList if pathlib.Path(s).stem == "steam"]
+
+		# the png looks better than the svg so find it
+		preferred_steam_icon = [s for s in steam_icons if s.endswith(".png")]
+
+		if len(preferred_steam_icon) > 0:
+			return preferred_steam_icon[0]
+
+		if len(steam_icons) > 0:
+			return steam_icons[0]
+
 	theme = selected_theme
 	cat = image_cat_prefix[0] + cat.lower()
 	if theme == "breeze" or theme == "breeze-dark":
@@ -238,7 +251,7 @@ def process_category(cat, curCats, aliases=group_aliases, appGroups=application_
 		return cat
 	return ""
 
-def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
+def process_dtfile(dtf, separate_steam_games, catDict):  # process this file & extract relevant info
 	active = False          # parse only after "[Desktop Entry]" line
 	fh = open(dtf,  "r")
 	lines = fh.readlines()
@@ -288,6 +301,8 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 				eqi[1] = "Other"
 			if eqi[1][-1] == ';':
 				eqi[1] = eqi[1][0:-1]
+			if separate_steam_games and this.Exec.startswith("steam steam://rungameid/"):
+				eqi[1] = "Steam Games"
 			cats = []
 			dtCats = eqi[1].split(';')
 			for cat in dtCats:
@@ -309,7 +324,7 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 addIconsToList(iconList, selected_theme)
 categoryDict = {}
 
-def process_user_desktop(custom_user_desktop_path):
+def process_user_desktop(custom_user_desktop_path, separate_steam_games):
 	if custom_user_desktop_path is not None:
 		desktop_directory = custom_user_desktop_path
 	else:
@@ -321,7 +336,7 @@ def process_user_desktop(custom_user_desktop_path):
 	desktop_files = glob.glob(desktop_directory + "/*.desktop")
 
 	for desktop_file in desktop_files:
-		desktop_item = process_dtfile(desktop_file, None)
+		desktop_item = process_dtfile(desktop_file, separate_steam_games, None)
 
 		if len(desktop_item.Categories) > 0:
 			for cat in desktop_item.Categories:
@@ -331,7 +346,7 @@ def process_user_desktop(custom_user_desktop_path):
 			# Force it into the "Other" cataegory.
 			categoryDict["Other"].append(desktop_item)
 
-def print_user_desktop(handle, custom_user_desktop_path, is_static):
+def print_user_desktop(handle, custom_user_desktop_path, separate_steam_games, is_static):
 	desktop_items = []
 
 	if custom_user_desktop_path is not None:
@@ -345,7 +360,7 @@ def print_user_desktop(handle, custom_user_desktop_path, is_static):
 	desktop_files = glob.glob(desktop_directory + "/*.desktop")
 
 	for desktop_file in desktop_files:
-		desktop_item = process_dtfile(desktop_file, None)
+		desktop_item = process_dtfile(desktop_file, separate_steam_games, None)
 		if desktop_item is None:
 			continue
 		desktop_items.append(desktop_item)
@@ -463,9 +478,11 @@ if __name__ == "__main__":
 	parser.add_argument("-d", "--desktop", help="Parse desktop files in user's Desktop directory (root/groups/no).\nroot: Put desktop files of ~/Desktop into root menu, above everything else.\ngroups: Include the desktop files of ~/Desktop to the application groups.\nno: Do not include desktop files of ~/Desktop.\nDefault: no", default="no")
 	parser.add_argument("-u", "--user-desktop-path", help="Path to user's Desktop directory. If not specified, path is understood to be \"~/Desktop\".\nOnly used when --desktop is set to \"root\" or \"groups\".")
 	parser.add_argument("--no-footer", help="Do not add custom footer.", action='store_true')
+	parser.add_argument("-s", "--separate-steam-games", help="Put Steam games into its own category.", action='store_true')
 	args = parser.parse_args()
 
 	user_desktop_type = str(args.desktop).lower()
+	separate_steam_games = args.separate_steam_games
 
 	custom_user_desktop_path = None
 	if args.user_desktop_path is not None:
@@ -485,10 +502,10 @@ if __name__ == "__main__":
 			if dtf.find(ifn) >= 0:
 				skipFlag = True
 		if skipFlag == False:
-			process_dtfile(dtf,  categoryDict)
+			process_dtfile(dtf, separate_steam_games, categoryDict)
 
 	if user_desktop_type == "groups":
-		process_user_desktop(custom_user_desktop_path)
+		process_user_desktop(custom_user_desktop_path, separate_steam_games)
 
 	output_handle = sys.stdout
 	if args.output:
@@ -506,7 +523,7 @@ if __name__ == "__main__":
 		print ("<openbox_pipe_menu>") # This is enough
 
 	if user_desktop_type == "root":
-		print_user_desktop(output_handle, custom_user_desktop_path, args.output)
+		print_user_desktop(output_handle, custom_user_desktop_path, separate_steam_games, args.output)
 
 	appGroupLen = len(application_groups)
 
