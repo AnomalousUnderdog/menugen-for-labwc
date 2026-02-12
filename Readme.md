@@ -8,14 +8,6 @@
 - **Custom Footer**: Supports a customizable footer with dynamic icons and separators.
 - **Auto-Reconfigure**: Can automatically reconfigure Labwc after generating the menu.
 
-## Important Notes on Icons
-
-⚠️ Icon Search Paths
-
-This script currently looks for icons in `/usr/share/icons`. It does not search `~/icons` or `~/.local/share/icons`.
-
-If your `settings.ini` specifies a theme (e.g., "Papirus") that is installed locally in your home folder, the icons will not appear in the menu. Please ensure your desired icon theme is installed system-wide in `/usr/share/icons`.
-
 ## Usage
 
 ### Generate Static Menu
@@ -25,8 +17,26 @@ python3 menu-generator.py -o ~/.config/labwc/menu.xml
 
 ### Disable Footer
 ```bash
-python3 menu-generator.py -o ~/.config/labwc/menu.xml -f false
+python3 menu-generator.py -o ~/.config/labwc/menu.xml --no-footer
 ```
+
+### Add Desktop Icons in ~/Desktop to Menu
+```bash
+python3 menu-generator.py -o ~/.config/labwc/menu.xml [--desktop-root | --desktop-groups]
+```
+
+|--desktop-root|--desktop-groups|default|
+|-|-|-|
+|![](./preview/droot.png) <br/> desktop icons show above everything else|![](./preview/dgroups.png) <br/> desktop icons are included in the application categories|![](./preview/dno.png) <br/> desktop icons are not included|
+
+### Separate Steam Games Into Their Own Category
+```bash
+python3 menu-generator.py -o ~/.config/labwc/menu.xml --separate-steam-games
+```
+
+|--separate-steam-games|default|
+|-|-|
+|![](./preview/with-s.png) <br/> Steam games are in their own category|![](./preview/without-s.png) <br/> Steam games are included alongside game launchers like Heroic, and utilities like Goverlay|
 
 ## Preview
 
