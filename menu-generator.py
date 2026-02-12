@@ -436,11 +436,10 @@ if __name__ == "__main__":
 	)
 	parser.add_argument("-o", "--output", help="Path to output file for static menu generation.")
 	parser.add_argument("-d", "--desktop", default="true", help="Parse desktop files (true/false). Default: true")
-	parser.add_argument("-f", "--footer", default="true", help="Show custom footer (true/false). Default: true")
+	parser.add_argument("--no-footer", help="Do not add custom footer.", action='store_true')
 	args = parser.parse_args()
 
-	# Logic to convert string argument to boolean
-	show_footer = str(args.footer).lower() in ("true", "1", "yes", "on", "t")
+	user_desktop_type = str(args.desktop).lower()
 
 	show_desktop = str(args.desktop).lower() in ("true", "1", "yes", "on", "t")
 
@@ -562,7 +561,7 @@ if __name__ == "__main__":
 			print ("</menu>")
 
 	# --- PRINT CUSTOM FOOTER ---
-	if show_footer:
+	if args.no_footer == False:
 		print_custom_footer(output_handle, args.output)
 
 	# WRITE FOOTERS
