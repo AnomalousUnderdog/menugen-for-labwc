@@ -63,7 +63,7 @@ application_groups = ("AudioVideo", "Development", "Editors",  "Engineering", "G
 group_aliases = {"Audio":"Multimedia","Video":"Multimedia","AudioVideo":"Multimedia","Network":"Internet","Game":"Games", "Utility":"Utilities", "Development":"Editors","GTK":"",  "GNOME":""}
 ignoreList = ("gtk3-icon-browser","evince-previewer", "Ted",  "wingide3.2", "python3.4", "feh","xfce4-power-manager-settings", "picom","compton","yad-icon-browser" )
 prefixes = ("legacy","categories","apps","devices","mimetypes","places","preferences","actions", "status","emblems") #added for prefered icon dirs and sizes. could be gathered automatically but wouldn't be sorted like this
-iconSizes = ("48","32","24","16","48x48","40x40","36x36","32x32","24x24","64x64","72x72","96x96","16x16","128x128","256x256","scalable","apps","symbolic")
+iconSizes = ("48","32","24","16","48x48","40x40","36x36","32x32","24x24","64x64","72x72","96x96","16x16","128x128","256x256", "512x512","scalable","apps","symbolic")
 terminal_string = "foot"
 
 #constants and list for icon list generating
