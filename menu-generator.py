@@ -309,10 +309,35 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 addIconsToList(iconList, selected_theme)
 categoryDict = {}
 
-def print_desktop(handle, is_static):
+def process_user_desktop(custom_user_desktop_path):
+	if custom_user_desktop_path is not None:
+		desktop_directory = custom_user_desktop_path
+	else:
+		desktop_directory = userhome + "/Desktop"
+
+	if not os.path.exists(desktop_directory):
+		return
+
+	desktop_files = glob.glob(desktop_directory + "/*.desktop")
+
+	for desktop_file in desktop_files:
+		desktop_item = process_dtfile(desktop_file, None)
+
+		if len(desktop_item.Categories) > 0:
+			for cat in desktop_item.Categories:
+				categoryDict[cat].append(desktop_item)
+		else:
+			# Doesn't even have a Categories entry.
+			# Force it into the "Other" cataegory.
+			categoryDict["Other"].append(desktop_item)
+
+def print_user_desktop(handle, custom_user_desktop_path, is_static):
 	desktop_items = []
 
-	desktop_directory = userhome + "/Desktop"
+	if custom_user_desktop_path is not None:
+		desktop_directory = custom_user_desktop_path
+	else:
+		desktop_directory = userhome + "/Desktop"
 
 	if not os.path.exists(desktop_directory):
 		return
@@ -435,13 +460,16 @@ if __name__ == "__main__":
         formatter_class=argparse.RawTextHelpFormatter
 	)
 	parser.add_argument("-o", "--output", help="Path to output file for static menu generation.")
-	parser.add_argument("-d", "--desktop", default="true", help="Parse desktop files (true/false). Default: true")
+	parser.add_argument("-d", "--desktop", help="Parse desktop files in user's Desktop directory (root/groups/no).\nroot: Put desktop files of ~/Desktop into root menu, above everything else.\ngroups: Include the desktop files of ~/Desktop to the application groups.\nno: Do not include desktop files of ~/Desktop.\nDefault: no", default="no")
+	parser.add_argument("-u", "--user-desktop-path", help="Path to user's Desktop directory. If not specified, path is understood to be \"~/Desktop\".\nOnly used when --desktop is set to \"root\" or \"groups\".")
 	parser.add_argument("--no-footer", help="Do not add custom footer.", action='store_true')
 	args = parser.parse_args()
 
 	user_desktop_type = str(args.desktop).lower()
 
-	show_desktop = str(args.desktop).lower() in ("true", "1", "yes", "on", "t")
+	custom_user_desktop_path = None
+	if args.user_desktop_path is not None:
+		custom_user_desktop_path = os.path.expanduser(str(args.user_desktop_path))
 
 	for appGroup in application_groups:
 		categoryDict[appGroup] = []
@@ -459,6 +487,9 @@ if __name__ == "__main__":
 		if skipFlag == False:
 			process_dtfile(dtf,  categoryDict)
 
+	if user_desktop_type == "groups":
+		process_user_desktop(custom_user_desktop_path)
+
 	output_handle = sys.stdout
 	if args.output:
 		try:
@@ -474,8 +505,8 @@ if __name__ == "__main__":
 	else:
 		print ("<openbox_pipe_menu>") # This is enough
 
-	if show_desktop:
-		print_desktop(output_handle, args.output)
+	if user_desktop_type == "root":
+		print_user_desktop(output_handle, custom_user_desktop_path, args.output)
 
 	appGroupLen = len(application_groups)
 
