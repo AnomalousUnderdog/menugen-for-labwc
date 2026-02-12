@@ -432,6 +432,8 @@ if __name__ == "__main__":
 			if not app.Name:
 				continue
 
+			# Convert multiple spaces between each word in the app's name into one space.
+			# Also ensure the name is capitalized.
 			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
 
 			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]])
