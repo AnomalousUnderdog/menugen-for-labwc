@@ -495,10 +495,16 @@ if __name__ == "__main__":
 			# Also ensure the name is capitalized.
 			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
 
-			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]])
+			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec, app.Name]])
 
 		if len(tmpList) < 1:
 			continue
+
+		for app in tmpList:
+			if any(x[1][3] == app[1][3] and x[1][2] != app[1][2] for x in tmpList):
+				# Something else has an identical name, but different exec inside.
+				# Add the actual executable command to the name to help differentiate it.
+				app[0] = f"{app[1][3]} ({app[1][2]})"
 
 		catList=sorted(tmpList, key = lambda x: x[0].lower())
 
