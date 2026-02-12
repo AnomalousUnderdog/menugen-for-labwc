@@ -263,10 +263,18 @@ def process_dtfile(dtf,  catDict):  # process this file & extract relevant info
 		elif eqi[0] == "Comment":
 			this.addComment(eqi[1])
 		elif eqi[0] == "Exec":
-			eqx=eqi[1].split(" ", 1)[0] 
-			if which(eqx) == None: 
-				return 
-			this.addExec(eqi[1]) 
+			execText = eqi[1]
+
+			# remove enclosing double/single quotes
+			if (execText.startswith('"') and execText.endswith('"')) or (execText.startswith("'") and execText.endswith("'")): 
+				execText = execText[1:-1]
+
+			eqx=execText.split(" ", 1)[0]
+
+			if which(eqx) == None: # check if program doesn't exist
+				return this
+
+			this.addExec(execText)
 		elif eqi[0] == "Icon":
 			this.addIcon(eqi[1])
 		elif eqi[0] == "Terminal":
