@@ -475,13 +475,16 @@ if __name__ == "__main__":
         formatter_class=argparse.RawTextHelpFormatter
 	)
 	parser.add_argument("-o", "--output", help="Path to output file for static menu generation.")
-	parser.add_argument("-d", "--desktop", help="Parse desktop files in user's Desktop directory (root/groups/no).\nroot: Put desktop files of ~/Desktop into root menu, above everything else.\ngroups: Include the desktop files of ~/Desktop to the application groups.\nno: Do not include desktop files of ~/Desktop.\nDefault: no", default="no")
-	parser.add_argument("-u", "--user-desktop-path", help="Path to user's Desktop directory. If not specified, path is understood to be \"~/Desktop\".\nOnly used when --desktop is set to \"root\" or \"groups\".")
+
+	user_desktop_arg_group = parser.add_mutually_exclusive_group()
+	user_desktop_arg_group.add_argument("--desktop-root", help="Put desktop icons found in ~/Desktop (or path specified by --user-desktop-path) to the root of the menu, above everything else.", action='store_true')
+	user_desktop_arg_group.add_argument("--desktop-groups", help="Include desktop icons found in ~/Desktop (or path specified by --user-desktop-path) to the application groups.", action='store_true')
+
+	parser.add_argument("-u", "--user-desktop-path", help="Path to user's Desktop directory. If not specified, path is understood to be \"~/Desktop\".\nOnly used if --desktop-root or --desktop-groups is specified.")
 	parser.add_argument("--no-footer", help="Do not add custom footer.", action='store_true')
 	parser.add_argument("-s", "--separate-steam-games", help="Put Steam games into its own category.", action='store_true')
 	args = parser.parse_args()
 
-	user_desktop_type = str(args.desktop).lower()
 	separate_steam_games = args.separate_steam_games
 
 	custom_user_desktop_path = None
@@ -504,7 +507,7 @@ if __name__ == "__main__":
 		if skipFlag == False:
 			process_dtfile(dtf, separate_steam_games, categoryDict)
 
-	if user_desktop_type == "groups":
+	if args.desktop_groups:
 		process_user_desktop(custom_user_desktop_path, separate_steam_games)
 
 	output_handle = sys.stdout
@@ -522,7 +525,7 @@ if __name__ == "__main__":
 	else:
 		print ("<openbox_pipe_menu>") # This is enough
 
-	if user_desktop_type == "root":
+	if args.desktop_root:
 		print_user_desktop(output_handle, custom_user_desktop_path, separate_steam_games, args.output)
 
 	appGroupLen = len(application_groups)
