@@ -497,6 +497,10 @@ if __name__ == "__main__":
 			app.Name= ' '.join([word[0].upper()+word[1:] for word in app.Name.split(' ')])
 
 			tmpList.append([app.Name, [app.Icon, app.Terminal, app.Exec]])
+
+		if len(tmpList) < 1:
+			continue
+
 		catList=sorted(tmpList, key = lambda x: x[0].lower())
 
 		groupName = application_groups[ag]
