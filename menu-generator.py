@@ -59,7 +59,7 @@ if selected_theme is None:
 if selected_theme is None:
 	selected_theme = "Adwaita"
 
-application_groups = ("AudioVideo", "Development", "Editors",  "Engineering", "Games", "Steam Games", "Graphics", "Internet",  "Multimedia", "Office",  "Other",  "Settings", "System",  "Utilities") # enter here new category as you wish, it will be sorted
+application_groups = ("AudioVideo", "Development", "Editors",  "Engineering", "Games", "Steam Games", "Heroic Games", "Graphics", "Internet",  "Multimedia", "Office",  "Other",  "Settings", "System",  "Utilities") # enter here new category as you wish, it will be sorted
 group_aliases = {"Audio":"Multimedia","Video":"Multimedia","AudioVideo":"Multimedia","Network":"Internet","Game":"Games", "Utility":"Utilities", "Development":"Editors","GTK":"",  "GNOME":""}
 ignoreList = ("gtk3-icon-browser","evince-previewer", "Ted",  "wingide3.2", "python3.4", "feh","xfce4-power-manager-settings", "picom","compton","yad-icon-browser" )
 prefixes = ("legacy","categories","apps","devices","mimetypes","places","preferences","actions", "status","emblems") #added for prefered icon dirs and sizes. could be gathered automatically but wouldn't be sorted like this
@@ -202,6 +202,12 @@ def getCatIcon(cat):
 
 		if len(steam_icons) > 0:
 			return steam_icons[0]
+	if cat == "Heroic Games":
+
+		heroic_icons = [s for s in iconList if "heroicgameslauncher" in s]
+
+		if len(heroic_icons) > 0:
+			return heroic_icons[0]
 
 	theme = selected_theme
 	cat = image_cat_prefix[0] + cat.lower()
@@ -251,7 +257,7 @@ def process_category(cat, curCats, aliases=group_aliases, appGroups=application_
 		return cat
 	return ""
 
-def process_dtfile(dtf, separate_steam_games, catDict):  # process this file & extract relevant info
+def process_dtfile(dtf, separate_games, catDict):  # process this file & extract relevant info
 	active = False          # parse only after "[Desktop Entry]" line
 	fh = open(dtf,  "r")
 	lines = fh.readlines()
@@ -301,8 +307,10 @@ def process_dtfile(dtf, separate_steam_games, catDict):  # process this file & e
 				eqi[1] = "Other"
 			if eqi[1][-1] == ';':
 				eqi[1] = eqi[1][0:-1]
-			if separate_steam_games and this.Exec.startswith("steam steam://rungameid/"):
+			if separate_games and this.Exec.startswith("steam steam://rungameid/"):
 				eqi[1] = "Steam Games"
+			if separate_games and this.Exec.startswith("xdg-open heroic://"):
+				eqi[1] = "Heroic Games"
 			cats = []
 			dtCats = eqi[1].split(';')
 			for cat in dtCats:
@@ -324,7 +332,7 @@ def process_dtfile(dtf, separate_steam_games, catDict):  # process this file & e
 addIconsToList(iconList, selected_theme)
 categoryDict = {}
 
-def process_user_desktop(custom_user_desktop_path, separate_steam_games):
+def process_user_desktop(custom_user_desktop_path, separate_games):
 	if custom_user_desktop_path is not None:
 		desktop_directory = custom_user_desktop_path
 	else:
@@ -336,7 +344,12 @@ def process_user_desktop(custom_user_desktop_path, separate_steam_games):
 	desktop_files = glob.glob(desktop_directory + "/*.desktop")
 
 	for desktop_file in desktop_files:
-		desktop_item = process_dtfile(desktop_file, separate_steam_games, None)
+		desktop_item = process_dtfile(desktop_file, separate_games, None)
+
+		if "Heroic Games" in desktop_item.Categories:
+			# Shortcuts made by Heroic show up in both Desktop and Application groups,
+			# so skip it from being shown in the Desktop
+			continue
 
 		if len(desktop_item.Categories) > 0:
 			for cat in desktop_item.Categories:
@@ -346,7 +359,7 @@ def process_user_desktop(custom_user_desktop_path, separate_steam_games):
 			# Force it into the "Other" cataegory.
 			categoryDict["Other"].append(desktop_item)
 
-def print_user_desktop(handle, custom_user_desktop_path, separate_steam_games, is_static):
+def print_user_desktop(handle, custom_user_desktop_path, separate_games, is_static):
 	desktop_items = []
 
 	if custom_user_desktop_path is not None:
@@ -360,8 +373,10 @@ def print_user_desktop(handle, custom_user_desktop_path, separate_steam_games, i
 	desktop_files = glob.glob(desktop_directory + "/*.desktop")
 
 	for desktop_file in desktop_files:
-		desktop_item = process_dtfile(desktop_file, separate_steam_games, None)
-		if desktop_item is None:
+		desktop_item = process_dtfile(desktop_file, separate_games, None)
+		if desktop_item is None or "Steam Games" in desktop_item.Categories or "Heroic Games" in desktop_item.Categories:
+			# If the desktop_item category has been assigned with Steam/Heroic, that means
+			# user wants it to show up in those groups, not in the Desktop, so skip it.
 			continue
 		desktop_items.append(desktop_item)
 
@@ -378,8 +393,7 @@ def print_user_desktop(handle, custom_user_desktop_path, separate_steam_games, i
 
 			handle.write(f'            <action name="Execute">\n')
 			if item.Exec:
-				escaped_cmd = xescape(item.Exec)
-				handle.write(f'                <command>{escaped_cmd}</command>\n')
+				handle.write(f'                <command>{xescape(item.Exec)}</command>\n')
 			handle.write('            </action>\n')
 			handle.write('        </item>\n')
 		else:
@@ -482,10 +496,10 @@ if __name__ == "__main__":
 
 	parser.add_argument("-u", "--user-desktop-path", help="Path to user's Desktop directory. If not specified, path is understood to be \"~/Desktop\".\nOnly used if --desktop-root or --desktop-groups is specified.")
 	parser.add_argument("--no-footer", help="Do not add custom footer.", action='store_true')
-	parser.add_argument("-s", "--separate-steam-games", help="Put Steam games into its own category.", action='store_true')
+	parser.add_argument("-s", "--separate-games", help="Put Steam/Heroic games into their own category.", action='store_true')
 	args = parser.parse_args()
 
-	separate_steam_games = args.separate_steam_games
+	separate_games = args.separate_games
 
 	custom_user_desktop_path = None
 	if args.user_desktop_path is not None:
@@ -505,10 +519,10 @@ if __name__ == "__main__":
 			if dtf.find(ifn) >= 0:
 				skipFlag = True
 		if skipFlag == False:
-			process_dtfile(dtf, separate_steam_games, categoryDict)
+			process_dtfile(dtf, separate_games, categoryDict)
 
 	if args.desktop_groups:
-		process_user_desktop(custom_user_desktop_path, separate_steam_games)
+		process_user_desktop(custom_user_desktop_path, separate_games)
 
 	output_handle = sys.stdout
 	if args.output:
@@ -526,7 +540,7 @@ if __name__ == "__main__":
 		print ("<openbox_pipe_menu>") # This is enough
 
 	if args.desktop_root:
-		print_user_desktop(output_handle, custom_user_desktop_path, separate_steam_games, args.output)
+		print_user_desktop(output_handle, custom_user_desktop_path, separate_games, args.output)
 
 	appGroupLen = len(application_groups)
 
