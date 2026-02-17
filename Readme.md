@@ -29,14 +29,14 @@ python3 menu-generator.py -o ~/.config/labwc/menu.xml [--desktop-root | --deskto
 |-|-|-|
 |![](./preview/droot.png) <br/> desktop icons show above everything else|![](./preview/dgroups.png) <br/> desktop icons are included in the application categories|![](./preview/dno.png) <br/> desktop icons are not included|
 
-### Separate Steam Games Into Their Own Category
+### Separate Games From Steam/Heroic Into Their Own Category
 ```bash
-python3 menu-generator.py -o ~/.config/labwc/menu.xml --separate-steam-games
+python3 menu-generator.py -o ~/.config/labwc/menu.xml --separate-games
 ```
 
-|--separate-steam-games|default|
+|--separate-games|default|
 |-|-|
-|![](./preview/with-s.png) <br/> Steam games are in their own category|![](./preview/without-s.png) <br/> Steam games are included alongside game launchers like Heroic, and utilities like Goverlay|
+|![](./preview/with-s.png) <br/> ![](./preview/heroic.png) <br/> Steam/Heroic games are in their own category|![](./preview/without-s.png) <br/> Steam/Heroic games are included alongside game clients/launchers like Steam or Heroic, and utilities like Goverlay or ProtonPlus|
 
 ## Preview
 
