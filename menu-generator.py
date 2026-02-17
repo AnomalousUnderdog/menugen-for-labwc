@@ -572,7 +572,7 @@ if __name__ == "__main__":
 			output_handle.write(menu_line + "\n")
 
 			for app in catList:
-				appName = xescape(app[0])
+				appName = app[0]
 				appIcon = app[1][0]
 				isTerm = app[1][1]
 				appExec = app[1][2]
